@@ -13,8 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -40,10 +38,16 @@ public abstract class DAOBD<T> {
     }
 
     public void establishConnection(String host, String port, String user, String password, String nameBD) {
+        System.out.println("la lista de cosas"+host+port+user+password+nameBD);
         initData(host, port, user, password, nameBD);
         try {
+            System.out.println("Entro al trycatch");
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-
+            
+              Class.forName("com.mysql.jdbc.Driver").newInstance();
+String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
+                    this.user+ this.password;
+            System.out.println(x);
             this.connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB,
                     this.user, this.password);
 
@@ -52,7 +56,10 @@ public abstract class DAOBD<T> {
         }
     }
 
-    private Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
+      
+            System.out.println("entre");
+            System.out.println("coneccion"+connection);
         return connection;
     }
 
@@ -68,11 +75,13 @@ public abstract class DAOBD<T> {
         }
     }
 
-    public int addElement(T elemento) throws SQLException {
+    public void addElement(T elemento) throws SQLException{
         try {
+            System.out.println(this.connection);
+           
             Statement statement = this.getConnection().createStatement();
-            //Sentencia en SQL para agregar elementos a la tabla
-            statement.executeUpdate("INSERT INTO " + elemento.getClass().getName()
+            //Sentencia en SQL para agregar elementos a la tabla           
+            statement.executeUpdate("INSERT INTO " + (elemento.getClass().getSimpleName()).toLowerCase()
                     + " VALUES ('" + elemento.toString()
                     + "')");
             JOptionPane.showMessageDialog(null, "Se ha registrado Exitosamente",
@@ -85,7 +94,7 @@ public abstract class DAOBD<T> {
             System.out.println(e.getMessage());
             JOptionPane.showMessageDialog(null, "No se registró el elemento");
         }
-        return getIdElemento(elemento);
+        
     }
 
     public void deleteElement(T elemento) throws SQLException {
