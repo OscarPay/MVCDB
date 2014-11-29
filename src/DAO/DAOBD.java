@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package DAO;
 
 import java.sql.Connection;
@@ -24,44 +19,64 @@ import monitor.Controlador_Pool;
  */
 public abstract class DAOBD<T> {
 
-    String host;
-    String port;
-    String user;
-    String password;
-    String nameDB;
-    Connection connection = null;
+    private String host;
+    private String port;
+    private String user;
+    private String password;
+    private String nameDB;
+    private Connection connection = null;
 
     private void initData(String host, String port, String user, String password, String nameBD) {
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.password = password;
-        this.nameDB = nameBD;
+        this.setHost(host);
+        this.setPort(port);
+        this.setUser(user);
+        this.setPassword(password);
+        this.setNameDB(nameBD);
     }
 
-    public void establishConnection(String host, String port, String user, String password, String nameBD) {
-        System.out.println("la lista de cosas" + host + port + user + password + nameBD);
-        initData(host, port, user, password, nameBD);
+    /**
+     * Crea una nueva conexión con la base de datos. Los datos los toma del
+     * archivo de configuración, éstos deberán ser correctos, ya que si hay
+     * incorrectos entonces no se podrá realizar la conexión.
+     *
+     */
+    public void establishConnection() {
+
+        if (this.connection == null) {
+            Controlador_Pool pool = new Controlador_Pool();
+            pool.iniciarPool();
+            ConexionBD unaConexion = pool.pedirConexion();
+            String puerto = String.valueOf(unaConexion.getPORT());
+
+            //Falta que se arregle lo de la contraseña.
+            initData(unaConexion.getHOST(), puerto, 
+                    unaConexion.getUsuario(), "", 
+                    unaConexion.getNombreBD());
+        }
+
         try {
-            System.out.println("Entro al trycatch");
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            //Aquí establece la conexión:
+            this.setConnection(DriverManager.getConnection("jdbc:mysql://" + this.getHost()
+                    + ":" + this.getPort() + "/"
+                    + this.getNameDB(), this.getUser(), this.getPassword()));
 
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            String x = "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB
-                    + this.user + this.password;
-            System.out.println(x);
-            this.connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB,
-                    this.user, this.password);
-
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {// handle the error          
+        } catch (SQLException ex) {// handle the error          
             System.out.println("SQLException: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
+    /**
+     * Devuelve la conexión; sino está activa o no se ha inicializado alguna,
+     * devuelve nulo.
+     *
+     * @return
+     * @throws SQLException
+     */
     public Connection getConnection() throws SQLException {
 
-        System.out.println("entre");
-        System.out.println("coneccion" + connection);
+        //System.out.println("entre");
+        //System.out.println("coneccion" + connection);
         return connection;
     }
 
@@ -79,28 +94,19 @@ public abstract class DAOBD<T> {
 
     public void addElement(T elemento) throws SQLException {
         try {
-            System.out.println(this.connection);
+            this.establishConnection();
 
-            Controlador_Pool db = new Controlador_Pool();
-            db.iniciarPool();
-            ConexionBD unaConexion = db.pedirConexion();
-
-            //daoCan.establishConnection("localhost", "3306", "root", "","mvcdb");
-            String puerto = String.valueOf(unaConexion.getPORT());
-            this.establishConnection(unaConexion.getHOST(), puerto,
-                    unaConexion.getUsuario(), "", unaConexion.getNombreBD());
-
-            
             Statement statement = this.getConnection().createStatement();
             //Sentencia en SQL para agregar elementos a la tabla           
             statement.executeUpdate("INSERT INTO " + (elemento.getClass().getSimpleName()).toLowerCase()
-                    + " VALUES ('" + elemento.toString()
-                    + "')");
+                    + " VALUES ('" + elemento.toString() + "')");
+
             JOptionPane.showMessageDialog(null, "Se ha registrado Exitosamente",
                     "Información",
                     JOptionPane.INFORMATION_MESSAGE);
+
             statement.close();
-            this.closeConnection(connection);
+            this.closeConnection(getConnection());
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -110,19 +116,22 @@ public abstract class DAOBD<T> {
     }
 
     public void deleteElement(T elemento) throws SQLException {
-        String claveElemento = obtenerClaveElemento(elemento);
+        String claveElemento = obtenerCondicionElemento(elemento);
         try {
+            this.establishConnection();
             Statement statement = this.getConnection().createStatement();
-            statement.execute("DELETE FROM " + elemento.getClass().getName()
+            statement.execute("DELETE FROM " + elemento.getClass().getSimpleName().toLowerCase()
                     + " WHERE " + claveElemento);
         } catch (SQLException ex) {
-            System.out.println(ex);
+            System.out.println("Error en borrar"+ex);
         }
     }
 
-    public List<T> getAll(String nameTable) {
+    public List<T> getAllFromTable(String nameTable) {
         List elementos = new ArrayList();
         try {
+
+            this.establishConnection();
 
             PreparedStatement consulta;
             consulta = this.getConnection().prepareStatement("SELECT * FROM "
@@ -133,24 +142,107 @@ public abstract class DAOBD<T> {
             }
             resultadoDeConsulta.close();
             consulta.close();
-            this.closeConnection(connection);
+            this.closeConnection(getConnection());
         } catch (Exception e) {
 
             JOptionPane.showMessageDialog(null,
-                    "No se pudo consultar el elemento\n"
-                    + e);
+                    "No se pudo consultar el elemento\n");
+            e.printStackTrace();
         }
         return elementos;
     }
 
-    public abstract int getIdElemento(T elemento);
 
-    public abstract String obtenerClaveElemento(T elemento);
+    /**
+     * Este método devolverá la condición de la tabla a la que
+     * se tendrá que acceder para borrar un elemento.
+     * 
+     * @param elemento será un objeto de cualquier tipo.
+     * @return la condición de la tabla en donde se borrará.
+     */
+    public abstract String obtenerCondicionElemento(T elemento);
 
     public abstract Object obtenerElementoDeTabla(ResultSet resultadoDeConsulta);
 
     public abstract boolean updateElement(T elemento, String condicion) throws SQLException;
 
-    public abstract T findElement(String condicion) throws SQLException;
+    public abstract T findElement(String nombreTabla,String condicion) throws SQLException;
+
+    /**
+     * @return the host
+     */
+    public String getHost() {
+        return host;
+    }
+
+    /**
+     * @return the port
+     */
+    public String getPort() {
+        return port;
+    }
+
+    /**
+     * @return the user
+     */
+    public String getUser() {
+        return user;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @return the nameDB
+     */
+    public String getNameDB() {
+        return nameDB;
+    }
+
+    /**
+     * @param host the host to set
+     */
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    /**
+     * @param port the port to set
+     */
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    /**
+     * @param user the user to set
+     */
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * @param nameDB the nameDB to set
+     */
+    public void setNameDB(String nameDB) {
+        this.nameDB = nameDB;
+    }
+
+    /**
+     * @param connection the connection to set
+     */
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
 }
