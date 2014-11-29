@@ -14,6 +14,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
+import monitor.ConexionBD;
+import monitor.Controlador_Pool;
 
 /**
  *
@@ -38,15 +40,15 @@ public abstract class DAOBD<T> {
     }
 
     public void establishConnection(String host, String port, String user, String password, String nameBD) {
-        System.out.println("la lista de cosas"+host+port+user+password+nameBD);
+        System.out.println("la lista de cosas" + host + port + user + password + nameBD);
         initData(host, port, user, password, nameBD);
         try {
             System.out.println("Entro al trycatch");
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            
-              Class.forName("com.mysql.jdbc.Driver").newInstance();
-String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
-                    this.user+ this.password;
+
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            String x = "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB
+                    + this.user + this.password;
             System.out.println(x);
             this.connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB,
                     this.user, this.password);
@@ -57,9 +59,9 @@ String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
     }
 
     public Connection getConnection() throws SQLException {
-      
-            System.out.println("entre");
-            System.out.println("coneccion"+connection);
+
+        System.out.println("entre");
+        System.out.println("coneccion" + connection);
         return connection;
     }
 
@@ -75,10 +77,20 @@ String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
         }
     }
 
-    public void addElement(T elemento) throws SQLException{
+    public void addElement(T elemento) throws SQLException {
         try {
             System.out.println(this.connection);
-           
+
+            Controlador_Pool db = new Controlador_Pool();
+            db.iniciarPool();
+            ConexionBD unaConexion = db.pedirConexion();
+
+            //daoCan.establishConnection("localhost", "3306", "root", "","mvcdb");
+            String puerto = String.valueOf(unaConexion.getPORT());
+            this.establishConnection(unaConexion.getHOST(), puerto,
+                    unaConexion.getUsuario(), "", unaConexion.getNombreBD());
+
+            
             Statement statement = this.getConnection().createStatement();
             //Sentencia en SQL para agregar elementos a la tabla           
             statement.executeUpdate("INSERT INTO " + (elemento.getClass().getSimpleName()).toLowerCase()
@@ -94,7 +106,7 @@ String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
             System.out.println(e.getMessage());
             JOptionPane.showMessageDialog(null, "No se registró el elemento");
         }
-        
+
     }
 
     public void deleteElement(T elemento) throws SQLException {
@@ -108,7 +120,7 @@ String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
         }
     }
 
-    public List<T> getAll(String nameTable){
+    public List<T> getAll(String nameTable) {
         List elementos = new ArrayList();
         try {
 
@@ -135,10 +147,10 @@ String x="jdbc:mysql://" + this.host + ":" + this.port + "/" + this.nameDB+
 
     public abstract String obtenerClaveElemento(T elemento);
 
-    public abstract Object obtenerElementoDeTabla(ResultSet resultadoDeConsulta) ;
-    
+    public abstract Object obtenerElementoDeTabla(ResultSet resultadoDeConsulta);
+
     public abstract boolean updateElement(T elemento, String condicion) throws SQLException;
 
     public abstract T findElement(String condicion) throws SQLException;
-    
+
 }
