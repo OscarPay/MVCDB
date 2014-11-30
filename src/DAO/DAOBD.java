@@ -91,6 +91,14 @@ public abstract class DAOBD<T> {
             }
         }
     }
+    
+    /**
+     * Agrega un elemento a la base de datos, ya sea candidato o usuario,
+     * CUIDADO que es un generico y tienen que implementar el 
+     * metodo toString() para que devuelva los valores en formato de MYSQL
+     * @param elemento
+     * @throws SQLException 
+     */
 
     public void addElement(T elemento) throws SQLException {
         try {
@@ -114,6 +122,12 @@ public abstract class DAOBD<T> {
         }
 
     }
+    
+    /**
+     * Elimina un elemento de la base de Datos
+     * @param elemento
+     * @throws SQLException 
+     */
 
     public void deleteElement(T elemento) throws SQLException {
         String claveElemento = obtenerCondicionElemento(elemento);
@@ -127,6 +141,11 @@ public abstract class DAOBD<T> {
         }
     }
 
+    /**
+     * Obtiene todos los elementos de una tabla, ya sea usuario o candidato
+     * @param nameTable
+     * @return 
+     */
     public List<T> getAllFromTable(String nameTable) {
         List elementos = new ArrayList();
         try {
