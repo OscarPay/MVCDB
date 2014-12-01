@@ -108,7 +108,7 @@ public abstract class DAOBD<T> {
             //Sentencia en SQL para agregar elementos a la tabla   
             String query = "INSERT INTO mvcdb." + 
                     (elemento.getClass().getSimpleName()).toLowerCase()
-                    + " VALUES (" + elemento.toString() + ")";
+                    + " VALUES ('" + elemento.toString() + "')";
             System.out.println(query);
             //System.exit(0);
             
