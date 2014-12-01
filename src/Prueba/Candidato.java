@@ -75,7 +75,8 @@ public class Candidato {
 
     @Override
     public String toString() {
-        return getID()+", "+getNombre()+", "+getNumVotos()+"\n";
+       //"1, lalo, 0"
+        return "'"+getID()+"', '"+getNombre()+"', '"+getNumVotos()+"'";
     }
 
 

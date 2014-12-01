@@ -9,8 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
-import monitor.ConexionBD;
 import monitor.Controlador_Pool;
+import monitor.DatosBD;
 
 /**
  *
@@ -45,11 +45,11 @@ public abstract class DAOBD<T> {
         if (this.connection == null) {
             Controlador_Pool pool = new Controlador_Pool();
             pool.iniciarPool();
-            ConexionBD unaConexion = pool.pedirConexion();
-            String puerto = String.valueOf(unaConexion.getPORT());
+            DatosBD unaConexion = pool.pedirConexion();
+            String puerto = String.valueOf(unaConexion.getPuerto());
 
             //Falta que se arregle lo de la contraseña.
-            initData(unaConexion.getHOST(), puerto, 
+            initData(unaConexion.getIp(), puerto, 
                     unaConexion.getUsuario(), "", 
                     unaConexion.getNombreBD());
         }
@@ -91,7 +91,7 @@ public abstract class DAOBD<T> {
             }
         }
     }
-    
+        
     /**
      * Agrega un elemento a la base de datos, ya sea candidato o usuario,
      * CUIDADO que es un generico y tienen que implementar el 
@@ -105,19 +105,25 @@ public abstract class DAOBD<T> {
             this.establishConnection();
 
             Statement statement = this.getConnection().createStatement();
-            //Sentencia en SQL para agregar elementos a la tabla           
-            statement.executeUpdate("INSERT INTO " + (elemento.getClass().getSimpleName()).toLowerCase()
-                    + " VALUES ('" + elemento.toString() + "')");
-
+            //Sentencia en SQL para agregar elementos a la tabla   
+            String query = "INSERT INTO mvcdb." + 
+                    (elemento.getClass().getSimpleName()).toLowerCase()
+                    + " VALUES (" + elemento.toString() + ")";
+            System.out.println(query);
+            //System.exit(0);
+            
+            statement.executeUpdate(query);
+/*
             JOptionPane.showMessageDialog(null, "Se ha registrado Exitosamente",
                     "Información",
                     JOptionPane.INFORMATION_MESSAGE);
-
+*/
             statement.close();
             this.closeConnection(getConnection());
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            e.printStackTrace();
             JOptionPane.showMessageDialog(null, "No se registró el elemento");
         }
 

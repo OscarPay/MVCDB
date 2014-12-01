@@ -22,12 +22,15 @@ public class PruebaDAO {
             DAOBD dao = new Dao();
                       
             dao.addElement(unc);
+           
             dao.addElement(cand);
             List lista = dao.getAllFromTable("candidato");
             System.out.println(lista);
+            
             System.out.println("-------------");
             System.out.println("Borrando elemento..");
             dao.deleteElement(unc);
+            
             System.out.println("Obteniendo todo:");
             List lista2 = dao.getAllFromTable("candidato");
             System.out.println(lista2);
@@ -47,6 +50,7 @@ public class PruebaDAO {
             System.out.println("\nEncontrando un elemento en específico...");
             Candidato c = (Candidato) dao.findElement("candidato", "`candidato_id` = '7'");
             System.out.println(c);
+          
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
