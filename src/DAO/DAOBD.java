@@ -49,13 +49,11 @@ public abstract class DAOBD<T> {
 
         if (this.connection == null) {
             
-            this.closeConnection(connection);
-            //pool.iniciarPool();
             pool = new Controlador_Pool();
             pool.iniciarPool();
             
             DatosBD unaConexion = pool.pedirConexion();
-            System.out.println("Información: "+unaConexion);
+            System.out.println("Información que acaba de setear: "+unaConexion);
             String puerto = String.valueOf(unaConexion.getPuerto());
             System.out.println("la bandera es: "+bandera);
             //System.out.println("Contraseña: "+unaConexion.getPassword());
@@ -63,8 +61,6 @@ public abstract class DAOBD<T> {
             initData(unaConexion.getIp(), puerto,
                     unaConexion.getUsuario(), unaConexion.getPassword(),
                     unaConexion.getNombreBD());
-        }else{
-            this.closeConnection(connection);
         }
 
         try {
@@ -75,8 +71,8 @@ public abstract class DAOBD<T> {
             
         
             //this.getConnection().setCatalog("mvcdb");
-            connection = DriverManager.getConnection(url, this.getUser(), this.getPassword());
-            this.setConnection(connection);
+            //connection = DriverManager.getConnection(url, this.getUser(), this.getPassword());
+            this.setConnection(DriverManager.getConnection(url, this.getUser(), this.getPassword()));
             //this.setConnection(DriverManager.getConnection(url, this.getUser(), this.getPassword()));
             System.out.println("La conexión tiene: " + this.getConnection().getMetaData().getURL());
             System.out.println("Creada");
@@ -110,12 +106,12 @@ boolean bandera = false;
                 if (!connection.isClosed()) { // Si no esta cerrada, se cierra
                     System.out.println("fase 3");
                     connection.close();
-                    //connection.commit();
+                    connection.commit();
                     System.out.println("Conexión Cerrada");
-                    connection = null;
-                    pool.finalize();
-                    pool = null;
-                    bandera = true;
+                    //connection = null;
+                    //pool.finalize();
+                    //pool = null;
+                    //bandera = true;
                 }
             } catch (SQLException ex) {
                 System.out.println(DAOBD.class.getName() + " " + ex.getMessage());
