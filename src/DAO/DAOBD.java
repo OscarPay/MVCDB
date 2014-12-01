@@ -80,8 +80,8 @@ public abstract class DAOBD<T> {
             //this.setConnection(DriverManager.getConnection(url, this.getUser(), this.getPassword()));
             System.out.println("La conexión tiene: " + this.getConnection().getMetaData().getURL());
             System.out.println("Creada");
-            connection.close();
-            System.out.println("Cerrada");
+            //connection.close();
+            //System.out.println("Cerrada");
         } catch (SQLException ex) {// handle the error          
             System.out.println("SQLException: " + ex.getMessage());
             ex.printStackTrace();
@@ -110,7 +110,8 @@ boolean bandera = false;
                 if (!connection.isClosed()) { // Si no esta cerrada, se cierra
                     System.out.println("fase 3");
                     connection.close();
-                    connection.commit();
+                    //connection.commit();
+                    System.out.println("Conexión Cerrada");
                     connection = null;
                     pool.finalize();
                     pool = null;
