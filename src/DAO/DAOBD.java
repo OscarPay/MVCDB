@@ -1,5 +1,6 @@
 package DAO;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,9 +26,11 @@ public abstract class DAOBD<T> {
     private String password;
     private String nameDB;
     private Connection connection = null;
+    private Controlador_Pool pool = new Controlador_Pool();
+
 
     public DAOBD() {
-        //pool.iniciarPool();
+        pool.iniciarPool();
     }
 
     private void initData(String host, String port, String user, String password, String nameBD) {
@@ -37,8 +40,7 @@ public abstract class DAOBD<T> {
         this.setPassword(password);
         this.setNameDB(nameBD);
     }
-    private Controlador_Pool pool;
-
+    
     /**
      * Crea una nueva conexión con la base de datos. Los datos los toma del
      * archivo de configuración, éstos deberán ser correctos, ya que si hay
@@ -48,9 +50,6 @@ public abstract class DAOBD<T> {
     public void establishConnection() {
 
         if (this.connection == null) {
-            
-            pool = new Controlador_Pool();
-            pool.iniciarPool();
             
             DatosBD unaConexion = pool.pedirConexion();
             System.out.println("Información que acaba de setear: "+unaConexion);
@@ -65,19 +64,18 @@ public abstract class DAOBD<T> {
 
         try {
             //Aquí establece la conexión:
+            MysqlDataSource source = new MysqlDataSource();
+            
             String url = "jdbc:mysql://" + this.getHost()
                     + ":" + this.getPort() + "/"
                     + this.getNameDB();
             
-        
-            //this.getConnection().setCatalog("mvcdb");
-            //connection = DriverManager.getConnection(url, this.getUser(), this.getPassword());
-            this.setConnection(DriverManager.getConnection(url, this.getUser(), this.getPassword()));
+            source.setURL(url);
+            source.setUser(this.user);
+            source.setPassword(this.password);
+            
+            this.setConnection(source.getConnection());
             //this.setConnection(DriverManager.getConnection(url, this.getUser(), this.getPassword()));
-            System.out.println("La conexión tiene: " + this.getConnection().getMetaData().getURL());
-            System.out.println("Creada");
-            //connection.close();
-            //System.out.println("Cerrada");
         } catch (SQLException ex) {// handle the error          
             System.out.println("SQLException: " + ex.getMessage());
             ex.printStackTrace();
@@ -99,19 +97,11 @@ public abstract class DAOBD<T> {
     }
 boolean bandera = false;
     public void closeConnection(Connection connection) {
-           System.out.println("fase 1");
         if (connection != null) {
-            System.out.println("fase 2");
             try {
-                if (!connection.isClosed()) { // Si no esta cerrada, se cierra
-                    System.out.println("fase 3");
+                if (!connection.isClosed()) { // Si no esta cerrada, se cierra;
                     connection.close();
-                    connection.commit();
-                    System.out.println("Conexión Cerrada");
-                    //connection = null;
-                    //pool.finalize();
-                    //pool = null;
-                    //bandera = true;
+                    connection = null;
                 }
             } catch (SQLException ex) {
                 System.out.println(DAOBD.class.getName() + " " + ex.getMessage());
@@ -150,7 +140,6 @@ boolean bandera = false;
             statement.close();
             statement = null;
             this.closeConnection(getConnection());
-            System.out.println("la bandera es: "+bandera);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
