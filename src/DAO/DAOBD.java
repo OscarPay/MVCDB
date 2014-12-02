@@ -107,8 +107,8 @@ public abstract class DAOBD<T> {
 
     /**
      * Agrega un elemento a la base de datos, ya sea candidato o usuario,
-     * CUIDADO que es un generico y tienen que implementar el metodo toString()
-     * para que devuelva los valores en formato de MYSQL
+     * CUIDADO que es un genérico y tienen que implementar el metodo toString()
+     * para que devuelva los valores en formato de MYSQL.
      *
      * @param elemento
      * @throws SQLException
@@ -124,15 +124,10 @@ public abstract class DAOBD<T> {
             String query = "INSERT INTO "
                     + (elemento.getClass().getSimpleName()).toLowerCase()
                     + " VALUES (" + elemento.toString() + ")";
-            System.out.println(query);
-            //System.exit(0);
+            //System.out.println(query);
 
             statement.executeUpdate(query);
-            /*
-             JOptionPane.showMessageDialog(null, "Se ha registrado Exitosamente",
-             "Información",
-             JOptionPane.INFORMATION_MESSAGE);
-             */
+            
             statement.close();
             statement = null;
             this.closeConnection(getConnection());
@@ -290,7 +285,4 @@ public abstract class DAOBD<T> {
         this.connection = connection;
     }
  
-    
-    
-
 }
