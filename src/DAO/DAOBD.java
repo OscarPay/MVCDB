@@ -2,13 +2,11 @@ package DAO;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JOptionPane;
 import monitor.Controlador_Pool;
 import monitor.DatosBD;
@@ -54,7 +52,6 @@ public abstract class DAOBD<T> {
             DatosBD unaConexion = pool.pedirConexion();
             System.out.println("Información que acaba de setear: "+unaConexion);
             String puerto = String.valueOf(unaConexion.getPuerto());
-            System.out.println("la bandera es: "+bandera);
             //System.out.println("Contraseña: "+unaConexion.getPassword());
             //Falta que se arregle lo de la contraseña.
             initData(unaConexion.getIp(), puerto,
@@ -95,7 +92,6 @@ public abstract class DAOBD<T> {
         //System.out.println("coneccion" + connection);
         return connection;
     }
-boolean bandera = false;
     public void closeConnection(Connection connection) {
         if (connection != null) {
             try {
