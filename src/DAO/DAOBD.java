@@ -92,7 +92,7 @@ public abstract class DAOBD<T> {
         //System.out.println("coneccion" + connection);
         return connection;
     }
-    public void closeConnection(Connection connection) {
+    public void closeConnection() {
         if (connection != null) {
             try {
                 if (!connection.isClosed()) { // Si no esta cerrada, se cierra;
@@ -130,7 +130,7 @@ public abstract class DAOBD<T> {
             
             statement.close();
             statement = null;
-            this.closeConnection(getConnection());
+            this.closeConnection();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -154,7 +154,7 @@ public abstract class DAOBD<T> {
                     + " WHERE " + claveElemento);
             statement.close();
             statement = null;
-            this.closeConnection(getConnection());
+            this.closeConnection();
             
         } catch (SQLException ex) {
             System.out.println("Error en borrar" + ex);
@@ -183,7 +183,7 @@ public abstract class DAOBD<T> {
             resultadoDeConsulta.close();
             consulta.close();
             consulta = null;
-            this.closeConnection(getConnection());
+            this.closeConnection();
         } catch (Exception e) {
 
             JOptionPane.showMessageDialog(null,
