@@ -8,8 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import monitor.Controlador_Pool;
 import monitor.DatosBD;
+import monitor.PoolManager;
 
 /**
  *
@@ -24,11 +24,10 @@ public abstract class DAOBD<T> {
     private String password;
     private String nameDB;
     private Connection connection = null;
-    private Controlador_Pool pool = new Controlador_Pool();
-
+    private PoolManager pool = new PoolManager();
 
     public DAOBD() {
-        pool.iniciarPool();
+        pool.start();
     }
 
     private void initData(String host, String port, String user, String password, String nameBD) {
@@ -48,12 +47,10 @@ public abstract class DAOBD<T> {
     public void establishConnection() {
 
         if (this.connection == null) {
-            
-            DatosBD unaConexion = pool.pedirConexion();
+            DatosBD unaConexion = pool.brindarConexion();
             System.out.println("Información que acaba de setear: "+unaConexion);
             String puerto = String.valueOf(unaConexion.getPuerto());
-            //System.out.println("Contraseña: "+unaConexion.getPassword());
-            //Falta que se arregle lo de la contraseña.
+
             initData(unaConexion.getIp(), puerto,
                     unaConexion.getUsuario(), unaConexion.getPassword(),
                     unaConexion.getNombreBD());
@@ -72,7 +69,6 @@ public abstract class DAOBD<T> {
             source.setPassword(this.password);
             
             this.setConnection(source.getConnection());
-            //this.setConnection(DriverManager.getConnection(url, this.getUser(), this.getPassword()));
         } catch (SQLException ex) {// handle the error          
             System.out.println("SQLException: " + ex.getMessage());
             ex.printStackTrace();
@@ -88,8 +84,6 @@ public abstract class DAOBD<T> {
      */
     public Connection getConnection() throws SQLException {
 
-        //System.out.println("entre");
-        //System.out.println("coneccion" + connection);
         return connection;
     }
     public void closeConnection() {
